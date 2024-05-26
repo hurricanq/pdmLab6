@@ -210,6 +210,150 @@ public class frmMain extends JFrame {
 
                     worker.execute();
                 });
+
+        btnDelete.addActionListener(
+                e -> {
+                    if (txtStudent.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Please enter the student's name.",
+                                "Input Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String studentName = txtStudent.getText();
+
+                    SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            ConnectSQL.deleteAttendance(studentName);
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            try {
+                                get();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "Student's attendance successfully deleted!",
+                                        "Successful Query",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                                txtStudent.setText("");
+                                btnDelete.setEnabled(true); // Enable the button after the task is completed
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "An error occurred while deleting the student's attendance.",
+                                        "Query Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                                btnDelete.setEnabled(true); // Enable the button in case of an error
+                            }
+                        }
+                    };
+
+                    worker.execute();
+                });
+
+        btnAddSubject.addActionListener(
+                e -> {
+                    if (txtSubject.getText().isEmpty() || txtTeacher.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Information is missing.",
+                                "Input Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String subjectName = txtSubject.getText();
+                    String teacherName = txtTeacher.getText();
+
+                    SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            ConnectSQL.insertSubject(subjectName, teacherName);
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            try {
+                                get();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "Subject successfully added!",
+                                        "Successful Query",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                                txtSubject.setText("");
+                                txtTeacher.setText("");
+                                btnAddSubject.setEnabled(true); // Enable the button after the task is completed
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "An error occurred while adding the subject.",
+                                        "Query Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                                btnAddSubject.setEnabled(true); // Enable the button in case of an error
+                            }
+                        }
+                    };
+
+                    worker.execute();
+                });
+
+        btnAddLesson.addActionListener(
+                e -> {
+                    if (txtSubject.getText().isEmpty() || txtTeacher.getText().isEmpty() || txtDate.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Date is missing.",
+                                "Input Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String subjectName = txtSubject.getText();
+                    String teacherName = txtTeacher.getText();
+                    String dateOfLesson = txtDate.getText();
+
+                    SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            ConnectSQL.insertLesson(subjectName, teacherName, dateOfLesson);
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            try {
+                                get();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "Lesson successfully added!",
+                                        "Successful Query",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                                txtSubject.setText("");
+                                txtTeacher.setText("");
+                                txtDate.setText("");
+                                btnAddLesson.setEnabled(true); // Enable the button after the task is completed
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                JOptionPane.showMessageDialog(
+                                        null,
+                                        "An error occurred while adding the lesson.",
+                                        "Query Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                                btnAddLesson.setEnabled(true); // Enable the button in case of an error
+                            }
+                        }
+                    };
+
+                    worker.execute();
+                });
     }
 
     public static synchronized frmMain getInstance() {

@@ -1,6 +1,8 @@
 import net.proteanit.sql.DbUtils;
 import javax.swing.*;
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ConnectSQL {
     static final String SERVER_NAME = "sql.bsite.net\\MSSQL2016";
@@ -90,6 +92,7 @@ public class ConnectSQL {
             con = DriverManager.getConnection(connectionUrl);
             con.setAutoCommit(false);
             String insertString = "INSERT INTO Student (StudentName) VALUES (?)";
+
             stmt = con.prepareStatement(insertString);
             stmt.setString(1, studentName);
             rs = stmt.executeUpdate();
@@ -106,7 +109,7 @@ public class ConnectSQL {
         return isUpdated;
     }
 
-    public static boolean deleteData(String inputQuery) {
+    public static boolean deleteAttendance(String studentName) {
         Connection con = null;
         PreparedStatement stmt;
         int rs;
@@ -115,9 +118,10 @@ public class ConnectSQL {
         try {
             con = DriverManager.getConnection(connectionUrl);
             con.setAutoCommit(false);
-            String deleteString = "DELETE FROM ? WHERE ?";
+            String deleteString = "DELETE FROM Attendance WHERE StuID IN (SELECT StudentID FROM Student WHERE StudentName = ?)";
+
             stmt = con.prepareStatement(deleteString);
-            stmt.setString(1, inputQuery);
+            stmt.setString(1, studentName);
             rs = stmt.executeUpdate();
 
             if (rs > 0) {
@@ -132,4 +136,83 @@ public class ConnectSQL {
         return isUpdated;
     }
 
+    public static boolean insertSubject(String subjectName, String teacherName) {
+        Connection con = null;
+        PreparedStatement stmt;
+        int rs;
+        boolean isUpdated = false;
+
+        try {
+            con = DriverManager.getConnection(connectionUrl);
+            con.setAutoCommit(false);
+            String insertSubjectString = "INSERT INTO Subject (SubjectName) VALUES (?)";
+            String insertTeacherString = "INSERT INTO TeacherSubject (TeaID,"
+                    + " SubID) VALUES ((SELECT TeacherID FROM Teacher WHERE TeacherName = ?),"
+                    + " (SELECT SubjectID FROM Subject WHERE SubjectName = ?))";
+
+            stmt = con.prepareStatement(insertSubjectString);
+            stmt.setString(1, subjectName);
+            rs = stmt.executeUpdate();
+
+            if (rs > 0) {
+                isUpdated = true;
+            }
+            con.commit();
+
+            stmt.close();
+            stmt = con.prepareStatement(insertTeacherString);
+            stmt.setString(1, teacherName);
+            stmt.setString(2, subjectName);
+            rs = stmt.executeUpdate();
+            con.commit();
+        } catch (SQLException e) {
+            return isUpdated;
+        } finally {
+            closeConnect(con);
+        }
+        return isUpdated;
+    }
+
+    public static boolean insertLesson(String subjectName, String teacherName, String dateOfLesson) {
+        Connection con = null;
+        PreparedStatement stmt;
+        int rs;
+        boolean isUpdated = false;
+
+        try {
+            con = DriverManager.getConnection(connectionUrl);
+            con.setAutoCommit(false);
+            String insertDateString = "INSERT INTO Lesson (DateOfLesson, TeaID, SubID) "
+                    + "VALUES (?, (SELECT TeacherID FROM Teacher WHERE TeacherName = ?), "
+                    + "(SELECT SubjectID FROM Subject WHERE SubjectName = ?))";
+            stmt = con.prepareStatement(insertDateString);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date d;
+            try {
+                d = sdf.parse(dateOfLesson);
+            }
+            catch (java.text.ParseException e) {
+                e.printStackTrace();
+                return false;
+            }
+            String date = sdf.format(d);
+            //System.out.println(date);
+
+            stmt.setString(1, date);
+            stmt.setString(2, teacherName);
+            stmt.setString(3, subjectName);
+            rs = stmt.executeUpdate();
+
+            if (rs > 0) {
+                isUpdated = true;
+            }
+            con.commit();
+        } catch (SQLException e) {
+            return isUpdated;
+        } finally {
+            closeConnect(con);
+        }
+        return isUpdated;
+    }
 }
